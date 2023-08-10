@@ -1,0 +1,34 @@
+<mxfile host="Electron" modified="2023-06-22T20:53:53.450Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.1.2 Chrome/106.0.5249.199 Electron/21.4.3 Safari/537.36" etag="NtCbbEhie6LbjYlwZ7j1" version="21.1.2" type="device">
+  <diagram name="Страница 1" id="0vBkoj1Epnmy4fEPNpKV">
+    <mxGraphModel dx="724" dy="1603" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="QET6Mndr9WsL6o-m_FyN-1" value="Короб" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="140" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="QET6Mndr9WsL6o-m_FyN-2" value="id&lt;br&gt;шк" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="QET6Mndr9WsL6o-m_FyN-1">
+          <mxGeometry y="50" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="QET6Mndr9WsL6o-m_FyN-3" value="Дело" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="140" width="160" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="QET6Mndr9WsL6o-m_FyN-4" value="id&lt;br&gt;шк&lt;br&gt;Заголовок&lt;br&gt;Упрощенная опись&lt;br&gt;Дата" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="QET6Mndr9WsL6o-m_FyN-3">
+          <mxGeometry y="50" width="160" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="QET6Mndr9WsL6o-m_FyN-5" value="Фото" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="540" y="140" width="160" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="QET6Mndr9WsL6o-m_FyN-6" value="id&lt;br&gt;id_дела&lt;br&gt;Название&lt;br&gt;Путь к файлу&lt;br&gt;Дата создания" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="QET6Mndr9WsL6o-m_FyN-5">
+          <mxGeometry y="50" width="160" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="QET6Mndr9WsL6o-m_FyN-7" value="Задание" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="-40" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="QET6Mndr9WsL6o-m_FyN-8" value="id&lt;br&gt;шк" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="QET6Mndr9WsL6o-m_FyN-7">
+          <mxGeometry y="50" width="160" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
