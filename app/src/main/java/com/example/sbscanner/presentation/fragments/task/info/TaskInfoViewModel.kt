@@ -18,7 +18,7 @@ class TaskInfoViewModel(
     private val getTaskUseCase: GetTaskUseCase,
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         when (event) {
             is Event.Ui.Init -> if (event.taskId.isNotEmptyId()) {
                 setState(currentState.copy(taskId = event.taskId))
@@ -29,6 +29,9 @@ class TaskInfoViewModel(
             }
             is Event.Ui.BarcodeUserIdReceived -> {
                 setState(currentState.copy(userId = event.barcode))
+            }
+            is Event.Ui.InputUserId -> {
+                setState(currentState.copy(userId = event.value))
             }
             is Event.Ui.ConfirmClick -> with(event) {
                 if (userId.isBlank() || taskBarcode.isBlank()) {
@@ -68,7 +71,7 @@ class TaskInfoViewModel(
             }
         }
         is Command.SaveTask -> flow {
-            when(val result = saveTaskUseCase(command.task)){
+            when (val result = saveTaskUseCase(command.task)) {
                 is SaveTaskResult.TaskAdded -> {
                     emit(Event.Internal.AddedTask(result.taskId))
                 }

@@ -88,6 +88,9 @@ class DocumentScannerFragment : CameraFragment<Event, Effect, Command, State>() 
 
     override fun handleEffect(effect: Effect) {
         when (effect) {
+            is Effect.CloseScanning -> {
+                presenter.back()
+            }
             is Effect.ShowErrorFoundMessage -> {
                 requireContext().showDialogMessage(
                     "Ошибка добавления дела",

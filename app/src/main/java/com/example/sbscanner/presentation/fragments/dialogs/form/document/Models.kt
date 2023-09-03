@@ -15,6 +15,7 @@ sealed class Event {
         data class InitAdd(val boxId: Int, val docBarcode: String) : Ui()
         data class InitEdit(val boxId: Int, val docId: Int) : Ui()
         data class SaveDocClick(val formData: FormData) : Ui()
+        data class ChangeForm(val formData: FormData): Ui()
     }
 
     sealed class Internal : Event() {

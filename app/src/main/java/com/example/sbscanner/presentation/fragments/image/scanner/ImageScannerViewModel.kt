@@ -18,11 +18,12 @@ import kotlinx.coroutines.flow.flow
 class ImageScannerViewModel(
     private val scanningDocumentUseCase: ScanningDocumentUseCase,
     private val takePhotoUseCase: TakePhotoUseCase,
+    private val getFullBoxUseCase: GetFullBoxUseCase
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
     private var cameraScanner: CameraScanner? = null
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         when (event) {
             is Event.Ui.Init -> {
                 setState(currentState.copy(boxId = event.boxId))
@@ -66,6 +67,9 @@ class ImageScannerViewModel(
             is Event.Ui.TakePhotoClick -> cameraScanner?.let {
                 commitCommand(Command.TakePhoto(it))
             }
+            is Event.Ui.ReturnBack -> {
+                commitCommand(Command.LoadFullBox(currentState.boxId))
+            }
 
             is Event.Internal.ReceivedBarcode -> {
                 setState(currentState.copy(formState = FormState.BARCODE_FOUND))
@@ -73,10 +77,17 @@ class ImageScannerViewModel(
             is Event.Internal.CreatedPhoto -> {
                 commitEffect(Effect.ShowImageDialog(currentState.docId, event.imgPath))
             }
+            is Event.Internal.FoundBoxBarcode -> {
+                if (event.emptyDocsCount == 0) {
+                    commitEffect(Effect.CloseScanning)
+                } else {
+                    commitEffect(Effect.ShowWarningMessage(event.emptyDocsCount))
+                }
+            }
             is Event.Internal.FoundInCurrentBox -> {
                 setState(currentState.copy(docId = event.docId, formState = FormState.TAKE_PHOTO))
             }
-            is Event.Internal.NotFound -> {
+            is Event.Internal.FoundNewDocBarcode -> {
                 commitEffect(Effect.ShowDocDialog(currentState.boxId, event.docBarcode))
             }
             is Event.Internal.FoundInAnotherBox -> {
@@ -90,17 +101,25 @@ class ImageScannerViewModel(
             is Command.StartScanning -> flow {
                 scanningDocumentUseCase(command.cameraScanner, command.boxId).collect {
                     when (it) {
-                        is ScanningResult.FoundBarcode -> {
+                        is ScanningDocumentEvent.ErrorBoxId -> {}
+                        is ScanningDocumentEvent.FoundBarcode -> {
                             emit(Event.Internal.ReceivedBarcode(it.barcode))
                         }
-                        is ScanningResult.FoundInCurrentBox -> {
-                            emit(Event.Internal.FoundInCurrentBox(it.document.id))
-                        }
-                        is ScanningResult.FoundInAnotherBox -> {
-                            emit(Event.Internal.FoundInAnotherBox(it.box.barcode))
-                        }
-                        is ScanningResult.NotFound -> {
-                            emit(Event.Internal.NotFound(docBarcode = it.barcode))
+                        is ScanningDocumentEvent.BarcodeType -> when (it) {
+                            is ScanningDocumentEvent.BarcodeType.BoxBarcode -> {
+                                val emptyDoc =
+                                    it.box.documents.count { doc -> doc.images.isEmpty() }
+                                emit(Event.Internal.FoundBoxBarcode(emptyDoc))
+                            }
+                            is ScanningDocumentEvent.BarcodeType.NewDocBarcode -> {
+                                emit(Event.Internal.FoundNewDocBarcode(docBarcode = it.barcode))
+                            }
+                            is ScanningDocumentEvent.BarcodeType.DocExistsInAnotherBox -> {
+                                emit(Event.Internal.FoundInAnotherBox(it.box.barcode))
+                            }
+                            is ScanningDocumentEvent.BarcodeType.DocExistsInCurrentBox -> {
+                                emit(Event.Internal.FoundInCurrentBox(it.docId))
+                            }
                         }
                     }
                 }
@@ -112,6 +131,14 @@ class ImageScannerViewModel(
             }
             is Command.StartPreview -> flow {
                 command.cameraScanner.startPreview()
+            }
+            is Command.LoadFullBox -> flow {
+                getFullBoxUseCase(command.boxId)?.let {
+                    val emptyDoc = it.documents.count { doc -> doc.images.isEmpty() }
+                    emit(Event.Internal.FoundBoxBarcode(emptyDoc))
+                    return@flow
+                }
+                emit(Event.Internal.FoundBoxBarcode(0))
             }
         }
     }
@@ -127,6 +154,7 @@ class ImageScannerViewModel(
                 return ImageScannerViewModel(
                     application.scanningDocumentUseCase,
                     application.takePhotoUseCase,
+                    application.getFullBoxUseCase
                 ) as T
             }
         }

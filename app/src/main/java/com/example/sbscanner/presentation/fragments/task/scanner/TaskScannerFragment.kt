@@ -19,7 +19,7 @@ class TaskScannerFragment : CameraFragment<Event, Effect, Command, State>() {
 
     private val presenter = Presenter(App.INSTANCE.router)
 
-    override val viewModel: TaskScannerViewModel by viewModels()
+    override val viewModel: TaskScannerViewModel by viewModels { TaskScannerViewModel.Factory }
 
     override fun getSurfaceTexture(): AutoFitSurfaceView {
         return binding.camera.holder

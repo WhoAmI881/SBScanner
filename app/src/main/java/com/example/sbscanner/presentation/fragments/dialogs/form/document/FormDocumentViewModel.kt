@@ -19,7 +19,7 @@ class FormDocumentViewModel(
     private val saveDocumentUseCase: SaveDocumentUseCase
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         when (event) {
             is Event.Ui.InitAdd -> {
                 val form = FormData(barcode = event.docBarcode)
@@ -33,6 +33,10 @@ class FormDocumentViewModel(
             is Event.Ui.SaveDocClick -> {
                 val document = event.formData.copy(docId = currentState.formData.docId).toDomain()
                 commitCommand(Command.SaveDoc(currentState.boxId, document))
+            }
+            is Event.Ui.ChangeForm -> {
+                val form = event.formData.copy(docId = currentState.formData.docId)
+                setState(currentState.copy(formData = form))
             }
 
             is Event.Internal.LoadedDoc -> {

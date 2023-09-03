@@ -16,15 +16,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class DocumentListViewModel(
-    private val getBoxUseCase: GetBoxUseCase,
     private val getFullDocumentListUseCase: GetFullDocumentListUseCase,
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         when (event) {
             is Event.Ui.Init -> {
                 setState(currentState.copy(boxId = event.boxId))
-                commitCommand(Command.LoadBox(event.boxId))
                 commitSubCommand(Command.LoadDocList(event.boxId))
             }
             is Event.Ui.AddDocClick -> {
@@ -66,9 +64,6 @@ class DocumentListViewModel(
                     )
                 )
             }
-            is Event.Internal.LoadedBox -> {
-                setState(currentState.copy(boxTitle = event.box.barcode))
-            }
         }
     }
 
@@ -78,11 +73,6 @@ class DocumentListViewModel(
                 getFullDocumentListUseCase(command.boxId).collect {
                     val items = it.map { model -> model.toUi() }
                     emit(Event.Internal.LoadedDocList(items))
-                }
-            }
-            is Command.LoadBox -> flow {
-                getBoxUseCase(command.boxId)?.let {
-                    emit(Event.Internal.LoadedBox(it))
                 }
             }
         }
@@ -98,7 +88,6 @@ class DocumentListViewModel(
             ): T {
                 val application = checkNotNull(extras[APPLICATION_KEY]) as App
                 return DocumentListViewModel(
-                    application.getBoxUseCase,
                     application.getFullDocumentListUseCase,
                 ) as T
             }

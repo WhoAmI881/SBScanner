@@ -15,7 +15,7 @@ class DeleteTaskViewModel(
     private val removeTaskUseCase: RemoveTaskUseCase
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
-    override suspend fun reduce(event: Event) {
+    override  fun reduce(event: Event) {
         when (event) {
             is Event.Ui.Init -> {
                 setState(currentState.copy(taskId = event.taskId))

@@ -13,11 +13,11 @@ import com.example.sbscanner.presentation.adapters.documents.DocumentDelegate
 import com.example.sbscanner.presentation.adapters.documents.DocumentsAdapter
 import com.example.sbscanner.presentation.adapters.documents.DocumentsAdapterListener
 import com.example.sbscanner.presentation.adapters.empty.EmptyDelegate
-import com.example.sbscanner.presentation.adapters.empty.EmptyItem
 import com.example.sbscanner.presentation.fragments.base.BaseFragment
 import com.example.sbscanner.presentation.fragments.base.DialogListener
 import com.example.sbscanner.presentation.fragments.dialogs.delete.box.DeleteBoxDialog
 import com.example.sbscanner.presentation.fragments.dialogs.delete.document.DeleteDocumentDialog
+import com.example.sbscanner.presentation.fragments.dialogs.form.document.FormDocumentDialog
 import com.example.sbscanner.presentation.navigation.Presenter
 
 class DocumentListFragment : BaseFragment<Event, Effect, Command, State>() {
@@ -108,7 +108,8 @@ class DocumentListFragment : BaseFragment<Event, Effect, Command, State>() {
                 presenter.onAddDocumentsOpen(effect.boxId)
             }
             is Effect.OpenEditDocument -> {
-                presenter.onEditDocumentInfoOpen(effect.boxId, effect.docId)
+                val dialog = FormDocumentDialog.newInstance(effect.boxId, effect.docId)
+                dialog.show(childFragmentManager, FormDocumentDialog::class.simpleName)
             }
             is Effect.OpenImageList -> {
                 presenter.onImageListOpen(effect.docId)

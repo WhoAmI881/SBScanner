@@ -14,6 +14,8 @@ import com.example.sbscanner.presentation.fragments.dialogs.form.document.FormDo
 import com.example.sbscanner.presentation.fragments.dialogs.form.image.FormImageDialog
 import com.example.sbscanner.presentation.fragments.dialogs.form.image.FormImageListener
 import com.example.sbscanner.presentation.navigation.Presenter
+import com.example.sbscanner.presentation.utils.onBackPressed
+import com.example.sbscanner.presentation.utils.showDialogConfirm
 import com.example.sbscanner.presentation.utils.showDialogMessage
 
 class ImageScannerFragment : CameraFragment<Event, Effect, Command, State>() {
@@ -41,7 +43,6 @@ class ImageScannerFragment : CameraFragment<Event, Effect, Command, State>() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentImageScannerBinding.inflate(inflater, container, false).apply {
-            camera.setBackAction { presenter.back() }
         }
         return binding.root
     }
@@ -49,12 +50,16 @@ class ImageScannerFragment : CameraFragment<Event, Effect, Command, State>() {
     override fun handleCameraEvent(event: CameraEvent) {
         when (event) {
             is CameraEvent.StartInit -> {
+                binding.camera.setBackAction { presenter.back() }
+                onBackPressed { presenter.back() }
                 viewModel.commitEvent(Event.Ui.ChangeCameraState(CameraState.INIT))
             }
             is CameraEvent.FailedInit -> {
                 viewModel.commitEvent(Event.Ui.ChangeCameraState(CameraState.FAILED))
             }
             is CameraEvent.SuccessInit -> {
+                binding.camera.setBackAction { viewModel.commitEvent(Event.Ui.ReturnBack) }
+                onBackPressed { viewModel.commitEvent(Event.Ui.ReturnBack) }
                 viewModel.commitEvent(Event.Ui.CameraInit(event.cameraScanner))
             }
         }
@@ -63,7 +68,6 @@ class ImageScannerFragment : CameraFragment<Event, Effect, Command, State>() {
     override fun renderState(state: State): Unit = with(binding) {
         when (state.cameraState) {
             CameraState.INIT -> {
-                camera.setBackAction { presenter.back() }
                 camera.initState()
             }
             CameraState.FAILED -> {
@@ -88,6 +92,17 @@ class ImageScannerFragment : CameraFragment<Event, Effect, Command, State>() {
 
     override fun handleEffect(effect: Effect) {
         when (effect) {
+            is Effect.CloseScanning -> {
+                presenter.back()
+            }
+            is Effect.ShowWarningMessage -> {
+                requireContext().showDialogConfirm(
+                    "Недоделанный короб",
+                    "Отсутствует фото у ${effect.emptyDocCount} дел! Завершить добавление фото?",
+                    { presenter.back() },
+                    { viewModel.commitEvent(Event.Ui.CloseModal) }
+                )
+            }
             is Effect.ShowErrorFoundMessage -> {
                 requireContext().showDialogMessage(
                     "Ошибка добавления фото",

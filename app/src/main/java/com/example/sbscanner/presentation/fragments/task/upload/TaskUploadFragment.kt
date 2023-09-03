@@ -64,11 +64,13 @@ class TaskUploadFragment : BaseFragment<Event, Effect, Command, State>() {
     private fun stopUploadTask() {
         requireContext().showDialogConfirm(
             "Отмена отправки задания",
-            "Вы действительно хотите отменить отправку?"
-        ) {
-            UploadService.stopService(requireContext())
-            presenter.back()
-        }
+            "Вы действительно хотите отменить отправку?",
+            {
+                UploadService.stopService(requireContext())
+                presenter.back()
+            },
+            {}
+        )
     }
 
     private val backPressedCallback = object : OnBackPressedCallback(true) {

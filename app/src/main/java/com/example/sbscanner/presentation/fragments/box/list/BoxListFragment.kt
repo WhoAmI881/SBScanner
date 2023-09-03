@@ -68,10 +68,10 @@ class BoxListFragment : BaseFragment<Event, Effect, Command, State>() {
         onBackPressed {
             requireContext().showDialogConfirm(
                 "Выход из приложения",
-                "Вы действительно хотите выйти?"
-            ) {
-                presenter.back()
-            }
+                "Вы действительно хотите выйти?",
+                { presenter.back() },
+                {}
+            )
         }
         return binding.root
     }
@@ -85,10 +85,10 @@ class BoxListFragment : BaseFragment<Event, Effect, Command, State>() {
         override fun onDeleteBoxClick(position: Int) {
             requireContext().showDialogConfirm(
                 "Удаление короба",
-                "Вы действительно хотите удалить короб?"
-            ) {
-                viewModel.commitEvent(Event.Ui.DeleteBoxClick(position))
-            }
+                "Вы действительно хотите удалить короб?",
+                { viewModel.commitEvent(Event.Ui.DeleteBoxClick(position)) },
+                {}
+            )
         }
     }
 

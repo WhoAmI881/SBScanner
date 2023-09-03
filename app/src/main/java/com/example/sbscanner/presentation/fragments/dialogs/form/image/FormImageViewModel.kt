@@ -19,7 +19,7 @@ class FormImageViewModel(
     private val removeImageUseCase: RemoveImageUseCase,
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         when (event) {
             is Event.Ui.InitEdit -> {
                 setState(currentState.copy(imgId = event.imgId))

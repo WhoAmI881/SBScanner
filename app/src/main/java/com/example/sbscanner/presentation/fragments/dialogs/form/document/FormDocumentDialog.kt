@@ -4,11 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.viewModels
 import com.example.sbscanner.databinding.FormDocumentDialogBinding
 import com.example.sbscanner.domain.utils.EMPTY_ID
 import com.example.sbscanner.domain.utils.isEmptyId
 import com.example.sbscanner.presentation.fragments.base.BaseDialogFragment
+import com.example.sbscanner.presentation.fragments.document.info.doOnChangeField
 import com.example.sbscanner.presentation.fragments.document.info.getFormData
 import com.example.sbscanner.presentation.fragments.document.info.setFormData
 import com.example.sbscanner.presentation.utils.onBackPressed
@@ -56,6 +58,10 @@ class FormDocumentDialog : BaseDialogFragment<Event, Effect, Command, State>() {
             form.save.setOnClickListener {
                 viewModel.commitEvent(Event.Ui.SaveDocClick(form.getFormData()))
             }
+            form.doOnChangeField {
+                viewModel.commitEvent(Event.Ui.ChangeForm(it))
+            }
+
         }
         onBackPressed {
             dismissWithAction { formListener?.onCancel() }

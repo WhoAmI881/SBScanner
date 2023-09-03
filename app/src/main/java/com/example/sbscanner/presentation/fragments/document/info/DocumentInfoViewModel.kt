@@ -16,7 +16,7 @@ class DocumentInfoViewModel(
     private val saveDocumentUseCase: SaveDocumentUseCase
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         when (event) {
             is Event.Ui.InitAdd -> {
                 val form = FormData(barcode = event.docBarcode)

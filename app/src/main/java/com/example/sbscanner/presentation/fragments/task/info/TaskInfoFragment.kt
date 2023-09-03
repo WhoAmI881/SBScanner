@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupMenu
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
@@ -20,6 +21,7 @@ import com.example.sbscanner.presentation.fragments.base.BaseFragment
 import com.example.sbscanner.presentation.fragments.dialogs.delete.task.DeleteTaskDialog
 import com.example.sbscanner.presentation.fragments.dialogs.test.TestDialog
 import com.example.sbscanner.presentation.navigation.Presenter
+import com.example.sbscanner.presentation.utils.setIfNotEqual
 import com.example.sbscanner.presentation.utils.showDialogConfirm
 import com.example.sbscanner.presentation.utils.showSnackbar
 
@@ -49,10 +51,12 @@ class TaskInfoFragment : BaseFragment<Event, Effect, Command, State>() {
             }
             confirm.setOnClickListener {
                 hideKeyboard()
-                viewModel.commitEvent(Event.Ui.ConfirmClick(
-                    taskBarcode = valueBarcode.text.toString().trim(),
-                    userId = userId.text.toString().trim()
-                ))
+                viewModel.commitEvent(
+                    Event.Ui.ConfirmClick(
+                        taskBarcode = valueBarcode.text.toString().trim(),
+                        userId = userId.text.toString().trim()
+                    )
+                )
             }
             cancel.setOnClickListener { presenter.back() }
             taskBarcode.setOnClickListener {
@@ -71,12 +75,15 @@ class TaskInfoFragment : BaseFragment<Event, Effect, Command, State>() {
                 val dialog = TestDialog.newInstance()
                 dialog.show(childFragmentManager, TestDialog::class.simpleName)
             }
+            userId.doOnTextChanged { text, _, _, _ ->
+                text?.let { viewModel.commitEvent(Event.Ui.InputUserId(it.toString())) }
+            }
         }
         return binding.root
     }
 
     override fun renderState(state: State) = with(binding) {
-        userId.setText(state.userId)
+        userId.setIfNotEqual(state.userId)
         valueBarcode.text = state.taskBarcode
     }
 
@@ -135,10 +142,10 @@ class TaskInfoFragment : BaseFragment<Event, Effect, Command, State>() {
                 ID_DELETE -> {
                     requireContext().showDialogConfirm(
                         "Удаление задания",
-                        "Вы действительно хотите удалить задание?"
-                    ) {
-                        viewModel.commitEvent(Event.Ui.DeleteTaskClick)
-                    }
+                        "Вы действительно хотите удалить задание?",
+                        { viewModel.commitEvent(Event.Ui.DeleteTaskClick) },
+                        {}
+                    )
                 }
             }
             return@setOnMenuItemClickListener true

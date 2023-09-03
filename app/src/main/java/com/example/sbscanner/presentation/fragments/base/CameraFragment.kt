@@ -14,13 +14,14 @@ import com.example.sbscanner.databinding.TemplateCameraBinding
 import com.example.sbscanner.presentation.camera2.CameraOption
 import com.example.sbscanner.presentation.camera2.CameraScanner
 import com.example.sbscanner.presentation.camera2.InitCameraResult
+import com.example.sbscanner.presentation.utils.showSnackbar
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
 sealed class CameraEvent {
     object StartInit : CameraEvent()
     data class SuccessInit(val cameraScanner: CameraScanner) : CameraEvent()
-    object FailedInit : CameraEvent()
+    data class FailedInit(val msg: String?) : CameraEvent()
 }
 
 enum class CameraState {
@@ -143,7 +144,7 @@ abstract class CameraFragment<Event : Any, Effect : Any, Command : Any, State : 
         )
         viewLifecycleOwner.lifecycleScope.launch {
             cameraEvents.emit(CameraEvent.StartInit)
-            when (cameraScanner.initializeCamera(
+            when (val result = cameraScanner.initializeCamera(
                 getSurfaceTexture().holder,
                 viewLifecycleOwner.lifecycle
             )) {
@@ -151,7 +152,8 @@ abstract class CameraFragment<Event : Any, Effect : Any, Command : Any, State : 
                     cameraEvents.emit(CameraEvent.SuccessInit(cameraScanner))
                 }
                 is InitCameraResult.Error -> {
-                    cameraEvents.emit(CameraEvent.FailedInit)
+                    cameraEvents.emit(CameraEvent.FailedInit(result.msg))
+                    result.msg?.let { requireView().showSnackbar(it) }
                 }
             }
         }

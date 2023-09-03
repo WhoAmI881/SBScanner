@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.sbscanner.App
 import com.example.sbscanner.domain.usecase.GetDocumentUseCase
-import com.example.sbscanner.domain.usecase.GetImageListInDocumentUseCase
+import com.example.sbscanner.domain.usecase.GetImageListUseCase
 import com.example.sbscanner.presentation.adapters.images.toDelegate
 import com.example.sbscanner.presentation.adapters.images.toUi
 import com.example.sbscanner.presentation.fragments.base.BaseViewModel
@@ -15,10 +15,10 @@ import kotlinx.coroutines.flow.flow
 
 class ImageListViewModel(
     private val getDocumentUseCase: GetDocumentUseCase,
-    private val getImageListInDocumentUseCase: GetImageListInDocumentUseCase,
+    private val getImageListUseCase: GetImageListUseCase,
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         when (event) {
             is Event.Ui.Init -> {
                 setState(currentState.copy(docId = event.docId))
@@ -50,7 +50,7 @@ class ImageListViewModel(
     override suspend fun execute(command: Command): Flow<Event> {
         return when (command) {
             is Command.LoadImageList -> flow {
-                getImageListInDocumentUseCase(command.docId).collect {
+                getImageListUseCase(command.docId).collect {
                     val items = it.map { img -> img.toUi() }
                     emit(Event.Internal.LoadedImageList(items))
                 }
@@ -73,7 +73,7 @@ class ImageListViewModel(
                 val application = checkNotNull(extras[APPLICATION_KEY]) as App
                 return ImageListViewModel(
                     application.getDocumentUseCase,
-                    application.getImageListInDocumentUseCase,
+                    application.getImageListUseCase,
                 ) as T
             }
         }

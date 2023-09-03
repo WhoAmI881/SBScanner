@@ -1,16 +1,22 @@
 package com.example.sbscanner.domain.usecase
 
 import com.example.sbscanner.domain.models.Box
-import com.example.sbscanner.domain.models.Document
+import com.example.sbscanner.domain.models.FullBox
 import com.example.sbscanner.domain.repository.BoxRepository
 import com.example.sbscanner.presentation.camera2.CameraScanner
 import kotlinx.coroutines.flow.flow
 
-sealed class ScanningResult{
-    data class FoundBarcode(val barcode: String): ScanningResult()
-    data class NotFound(val barcode: String): ScanningResult()
-    data class FoundInCurrentBox(val document: Document): ScanningResult()
-    data class FoundInAnotherBox(val box: Box, val document: Document): ScanningResult()
+private val REGEX = "^[A-Za-z0-9]{7,}$".toRegex()
+
+sealed class ScanningDocumentEvent {
+    data class ErrorBoxId(val boxId: Int) : ScanningDocumentEvent()
+    data class FoundBarcode(val barcode: String) : ScanningDocumentEvent()
+    sealed class BarcodeType : ScanningDocumentEvent() {
+        data class BoxBarcode(val box: FullBox) : BarcodeType()
+        data class NewDocBarcode(val barcode: String) : BarcodeType()
+        data class DocExistsInCurrentBox(val docId: Int) : BarcodeType()
+        data class DocExistsInAnotherBox(val box: Box, val docId: Int) : BarcodeType()
+    }
 }
 
 class ScanningDocumentUseCase(
@@ -18,22 +24,34 @@ class ScanningDocumentUseCase(
 ) {
 
     operator fun invoke(cameraScanner: CameraScanner, boxId: Int) = flow {
-        val barcode = cameraScanner.startScanning()
-        emit(ScanningResult.FoundBarcode(barcode))
+        val fbox = boxRepository.getFullBox(boxId)
+
+        if (fbox == null) {
+            emit(ScanningDocumentEvent.ErrorBoxId(boxId))
+            return@flow
+        }
+
+        val barcode = cameraScanner.startScanning(REGEX)
         cameraScanner.startPreview()
+        emit(ScanningDocumentEvent.FoundBarcode(barcode))
+
+        if (barcode == fbox.box.barcode) {
+            emit(ScanningDocumentEvent.BarcodeType.BoxBarcode(fbox))
+            return@flow
+        }
 
         val item = boxRepository.getBoxesWithDocuments().firstOrNull { box ->
             box.documents.any { doc -> doc.barcode == barcode }
         }
-        if(item == null){
-            emit(ScanningResult.NotFound(barcode))
+        if (item == null) {
+            emit(ScanningDocumentEvent.BarcodeType.NewDocBarcode(barcode))
             return@flow
         }
         val document = item.documents.first { it.barcode == barcode }
         if (item.box.id == boxId) {
-            emit(ScanningResult.FoundInCurrentBox(document))
+            emit(ScanningDocumentEvent.BarcodeType.DocExistsInCurrentBox(document.id))
         } else {
-            emit(ScanningResult.FoundInAnotherBox(item.box, document))
+            emit(ScanningDocumentEvent.BarcodeType.DocExistsInAnotherBox(item.box, document.id))
         }
     }
 }

@@ -19,7 +19,7 @@ import kotlin.coroutines.suspendCoroutine
 
 sealed class InitCameraResult {
     object Success : InitCameraResult()
-    object Error : InitCameraResult()
+    data class Error(val msg: String?) : InitCameraResult()
 }
 
 class CameraScanner(
@@ -29,11 +29,11 @@ class CameraScanner(
 
     private lateinit var cameraSession: CameraCaptureSession
 
-    private lateinit var cameraLifecycle: Lifecycle
+    private var cameraLifecycle: Lifecycle? = null
 
     private lateinit var targets: List<Surface>
 
-    private val scanner = BarcodeScanner()
+    private val scanner = Scanner()
 
     private val cameraThread = HandlerThread("CameraThread").apply { start() }
 
@@ -55,7 +55,7 @@ class CameraScanner(
         override fun onStop(owner: LifecycleOwner) {
             super.onStop(owner)
             Log.i("DEBUG", "CLOSE-CAMERA")
-            cameraLifecycle.removeObserver(this)
+            cameraLifecycle?.removeObserver(this)
             stopCamera()
         }
 
@@ -89,12 +89,11 @@ class CameraScanner(
                 targets = listOf(holder.surface, imageReader.surface)
                 cameraSession = createCaptureSession(cameraDevice, targets, cameraHandler)
                 cameraLifecycle = lifecycle
-                cameraLifecycle.addObserver(lifecycleObserver)
+                cameraLifecycle?.addObserver(lifecycleObserver)
                 return@withContext InitCameraResult.Success
             } catch (e: Exception) {
-                cameraLifecycle.removeObserver(lifecycleObserver)
                 Log.e(TAG, e.message, e)
-                return@withContext InitCameraResult.Error
+                return@withContext InitCameraResult.Error(e.message)
             }
         }
 
@@ -111,7 +110,9 @@ class CameraScanner(
         imageReader.setOnImageAvailableListener(ImageReader.OnImageAvailableListener { reader ->
             val image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
             val bitmap = image.toBitmap().rotate(90f)
-            if(cont.isActive) { cont.resume(bitmap) }
+            if (cont.isActive) {
+                cont.resume(bitmap)
+            }
             image.close()
         }, imageReaderHandler)
         val captureRequest = cameraDevice.createCaptureRequest(
@@ -122,15 +123,17 @@ class CameraScanner(
         cameraSession.capture(captureRequest.build(), null, cameraHandler)
     }
 
-    suspend fun startScanning(): String = suspendCancellableCoroutine { cont ->
+    suspend fun startScanning(regex: Regex? = null): String = suspendCancellableCoroutine { cont ->
         imageReader.setOnImageAvailableListener(ImageReader.OnImageAvailableListener { reader ->
             val image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
-            val bitmap = image.toBitmap().rotate(90f)
-            val result = scanner.scanBitmap(bitmap).ifBlank {
+            val result = scanner.scanBitmap(image.toBitmap(), regex)
+            if(result !is ScannerResult.Success){
                 image.close()
                 return@OnImageAvailableListener
             }
-            if(cont.isActive){ cont.resume(result) }
+            if (cont.isActive) {
+                cont.resume(result.barcode)
+            }
             image.close()
         }, imageReaderHandler)
 
@@ -151,11 +154,7 @@ class CameraScanner(
     ): CameraDevice = suspendCancellableCoroutine { cont ->
         manager.openCamera(cameraId, object : CameraDevice.StateCallback() {
             override fun onOpened(device: CameraDevice) {
-                /*
-                val exc = RuntimeException("Camera $cameraId error")
-                if (cont.isActive) cont.resumeWithException(exc)
-                 */
-                cont.resume(device)
+               cont.resume(device)
             }
 
             override fun onDisconnected(device: CameraDevice) {}

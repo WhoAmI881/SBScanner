@@ -16,7 +16,7 @@ class ImageInfoViewModel(
     private val removeImageUseCase: RemoveImageUseCase,
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         when (event) {
             is Event.Ui.Init -> {
                 commitCommand(Command.LoadImage(event.imgId))

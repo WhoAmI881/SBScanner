@@ -10,7 +10,7 @@ import com.example.sbscanner.databinding.ItemBoxBinding
 import com.example.sbscanner.presentation.adapters.base.AdapterDelegate
 import com.example.sbscanner.presentation.adapters.base.DelegateItem
 
-class BoxDelegate : AdapterDelegate {
+class       BoxDelegate : AdapterDelegate {
 
     override fun onCreateViewHolder(parent: ViewGroup): RecyclerView.ViewHolder {
         return ViewHolder.create(parent)

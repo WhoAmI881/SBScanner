@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.sbscanner.App
-import com.example.sbscanner.domain.models.Box
-import com.example.sbscanner.domain.usecase.SaveBoxUseCase
+import com.example.sbscanner.domain.usecase.ScanningBoxEvent
+import com.example.sbscanner.domain.usecase.ScanningBoxUseCase
 import com.example.sbscanner.presentation.fragments.base.BaseViewModel
 import com.example.sbscanner.presentation.fragments.base.CameraState
 import com.example.sbscanner.presentation.fragments.base.FormState
@@ -14,10 +14,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class BoxScannerViewModel(
-    private val saveBoxUseCase: SaveBoxUseCase
+    private val scanningBoxUseCase: ScanningBoxUseCase,
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         return when (event) {
             is Event.Ui.Init -> {
                 setState(currentState.copy(taskId = event.taskId))
@@ -50,16 +50,25 @@ class BoxScannerViewModel(
     override suspend fun execute(command: Command): Flow<Event> {
         return when (command) {
             is Command.StartScanning -> flow {
-                val barcode = command.cameraScanner.startScanning()
-                emit(Event.Internal.ReceivedBarcode(barcode))
-                command.cameraScanner.startPreview()
-                val boxId = saveBoxUseCase(command.taskId, Box(barcode = barcode))
-                emit(Event.Internal.SavedBox(boxId))
+                scanningBoxUseCase(command.cameraScanner, command.taskId).collect {
+                    when (it) {
+                        is ScanningBoxEvent.FoundBarcode -> {
+                            emit(Event.Internal.ReceivedBarcode(it.barcode))
+                        }
+                        is ScanningBoxEvent.BoxSaved -> {
+                            emit(Event.Internal.SavedBox(it.boxId))
+                        }
+                        is ScanningBoxEvent.BoxAlreadyExists -> {
+                            emit(Event.Internal.SavedBox(it.boxId))
+                        }
+                    }
+                }
             }
         }
     }
 
     companion object {
+
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(
@@ -68,7 +77,7 @@ class BoxScannerViewModel(
             ): T {
                 val application = checkNotNull(extras[APPLICATION_KEY]) as App
                 return BoxScannerViewModel(
-                    application.saveBoxUseCase,
+                    application.scanningBoxUseCase
                 ) as T
             }
         }

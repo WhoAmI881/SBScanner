@@ -13,7 +13,8 @@ class SaveDocumentUseCase(
         return if (document.id.isEmptyId()) {
             documentRepository.addDocument(boxId, document.copy(timestamp = getCurrentTimestamp()))
         } else {
-            documentRepository.updateDocument(boxId, document)
+            val doc = documentRepository.getDocumentById(document.id) ?: return document.id
+            documentRepository.updateDocument(boxId, document.copy(timestamp = doc.timestamp))
             document.id
         }
     }

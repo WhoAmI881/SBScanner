@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.sbscanner.App
 import com.example.sbscanner.domain.usecase.ScanningDocumentUseCase
-import com.example.sbscanner.domain.usecase.ScanningResult
+import com.example.sbscanner.domain.usecase.ScanningDocumentEvent
 import com.example.sbscanner.presentation.camera2.CameraScanner
 import com.example.sbscanner.presentation.fragments.base.BaseViewModel
 import com.example.sbscanner.presentation.fragments.base.CameraState
@@ -20,7 +20,7 @@ class DocumentScannerViewModel(
 
     private var cameraScanner: CameraScanner? = null
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         when (event) {
             is Event.Ui.Init -> {
                 setState(currentState.copy(boxId = event.boxId))
@@ -58,8 +58,11 @@ class DocumentScannerViewModel(
             is Event.Internal.FoundInCurrentBox -> {
                 commitEffect(Effect.OpenDocumentEdit(currentState.boxId, event.docId))
             }
-            is Event.Internal.NotFound -> {
+            is Event.Internal.FoundNewDocBarcode -> {
                 commitEffect(Effect.OpenDocumentAdd(currentState.boxId, event.docBarcode))
+            }
+            is Event.Internal.FoundBoxBarcode -> {
+                commitEffect(Effect.CloseScanning)
             }
             is Event.Internal.FoundInAnotherBox -> {
                 commitEffect(Effect.ShowErrorFoundMessage(event.boxBarcode))
@@ -72,17 +75,25 @@ class DocumentScannerViewModel(
             is Command.StartScanning -> flow {
                 scanningDocumentUseCase(command.cameraScanner, command.boxId).collect {
                     when (it) {
-                        is ScanningResult.FoundBarcode -> {
+                        is ScanningDocumentEvent.ErrorBoxId -> {
+
+                        }
+                        is ScanningDocumentEvent.FoundBarcode -> {
                             emit(Event.Internal.ReceivedBarcode(it.barcode))
                         }
-                        is ScanningResult.FoundInCurrentBox -> {
-                            emit(Event.Internal.FoundInCurrentBox(it.document.id))
-                        }
-                        is ScanningResult.FoundInAnotherBox -> {
-                            emit(Event.Internal.FoundInAnotherBox(it.box.barcode))
-                        }
-                        is ScanningResult.NotFound -> {
-                            emit(Event.Internal.NotFound(docBarcode = it.barcode))
+                        is ScanningDocumentEvent.BarcodeType -> when (it) {
+                            is ScanningDocumentEvent.BarcodeType.BoxBarcode -> {
+                                emit(Event.Internal.FoundBoxBarcode)
+                            }
+                            is ScanningDocumentEvent.BarcodeType.NewDocBarcode -> {
+                                emit(Event.Internal.FoundNewDocBarcode(docBarcode = it.barcode))
+                            }
+                            is ScanningDocumentEvent.BarcodeType.DocExistsInAnotherBox -> {
+                                emit(Event.Internal.FoundInAnotherBox(it.box.barcode))
+                            }
+                            is ScanningDocumentEvent.BarcodeType.DocExistsInCurrentBox -> {
+                                emit(Event.Internal.FoundInCurrentBox(it.docId))
+                            }
                         }
                     }
                 }

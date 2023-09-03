@@ -61,7 +61,7 @@ abstract class BaseViewModel<Event : Any, Effect : Any, Command : Any, State : A
         commandSub.clear()
     }
 
-    abstract suspend fun reduce(event: Event)
+    abstract fun reduce(event: Event)
 
     abstract suspend fun execute(command: Command): Flow<Event>
 
@@ -82,15 +82,19 @@ abstract class BaseViewModel<Event : Any, Effect : Any, Command : Any, State : A
     }
 
     fun commitEvent(event: Event) {
-        viewModelScope.launch {
-            Log.i("EVENT", event.toString())
-            events.emit(event)
+        Log.i("EVENT", event.toString())
+        reduce(event)
+        /*
+            viewModelScope.launch {
+                Log.i("EVENT", event.toString())
+                events.emit(event)
         }
+         */
     }
 
     fun commitEffect(effect: Effect) {
+        Log.i("EFFECT", effect.toString())
         viewModelScope.launch {
-            Log.i("EFFECT", effect.toString())
             _effects.emit(effect)
         }
     }
@@ -109,9 +113,7 @@ abstract class BaseViewModel<Event : Any, Effect : Any, Command : Any, State : A
         Log.i("COMMAND", command.toString())
         jobs += viewModelScope.launch(Dispatchers.IO) {
             try {
-                execute(command).collect {
-                    commitEvent(it)
-                }
+                execute(command).collect { commitEvent(it) }
             } catch (t: CancellationException) {
                 throw t
             } catch (t: Throwable) {

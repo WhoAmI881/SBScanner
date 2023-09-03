@@ -61,9 +61,9 @@ class App : Application() {
         )
     }
     val getSessionTaskUseCase by lazy { GetSessionTaskUseCase(taskRepository) }
+    val scanningTaskUseCase by lazy { ScanningTaskUseCase() }
 
     val getFullBoxListUseCase by lazy { GetFullBoxListUseCase(boxRepository) }
-    val saveBoxUseCase by lazy { SaveBoxUseCase(boxRepository) }
     val removeBoxUseCase by lazy {
         RemoveBoxUseCase(
             boxRepository,
@@ -71,7 +71,8 @@ class App : Application() {
             imageRepository
         )
     }
-    val getBoxUseCase by lazy { GetBoxUseCase(boxRepository) }
+    val getFullBoxUseCase by lazy { GetFullBoxUseCase(boxRepository) }
+    val scanningBoxUseCase by lazy { ScanningBoxUseCase(boxRepository) }
 
     val getDocumentUseCase by lazy { GetDocumentUseCase(documentRepository) }
     val getFullDocumentListUseCase by lazy { GetFullDocumentListUseCase(documentRepository) }
@@ -80,7 +81,7 @@ class App : Application() {
     val scanningDocumentUseCase by lazy { ScanningDocumentUseCase(boxRepository) }
 
     val saveImageUseCase by lazy { SaveImageUseCase(imageRepository) }
-    val getImageListInDocumentUseCase by lazy { GetImageListInDocumentUseCase(imageRepository) }
+    val getImageListUseCase by lazy { GetImageListUseCase(imageRepository) }
     val getImageUseCase by lazy { GetImageUseCase(imageRepository) }
     val removeImageUseCase by lazy { RemoveImageUseCase(imageRepository) }
     val takePhotoUseCase by lazy { TakePhotoUseCase(imageRepository) }

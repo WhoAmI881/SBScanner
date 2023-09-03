@@ -15,7 +15,7 @@ class TestViewModel(
     private val testUseCase: TestUseCase,
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         when (event) {
             is Event.Ui.Init -> {
                 commitCommand(

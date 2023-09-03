@@ -24,9 +24,10 @@ sealed class Event {
 
     sealed class Internal : Event() {
         data class ReceivedBarcode(val barcode: String) : Internal()
+        data class FoundNewDocBarcode(val docBarcode: String): Internal()
+        object FoundBoxBarcode: Internal()
         data class FoundInCurrentBox(val docId: Int) : Internal()
         data class FoundInAnotherBox(val boxBarcode: String) : Internal()
-        data class NotFound(val docBarcode: String) : Internal()
     }
 }
 
@@ -34,6 +35,7 @@ sealed class Effect {
     data class ShowErrorFoundMessage(val barcode: String) : Effect()
     data class OpenDocumentAdd(val boxId: Int, val barcode: String) : Effect()
     data class OpenDocumentEdit(val boxId: Int, val docId: Int) : Effect()
+    object CloseScanning: Effect()
 }
 
 sealed class Command {

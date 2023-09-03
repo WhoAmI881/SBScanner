@@ -8,7 +8,6 @@ import com.example.sbscanner.presentation.adapters.documents.DocumentItem
 
 data class State(
     val boxId: Int = EMPTY_ID,
-    val boxTitle: String = "",
     val imgEnable: Boolean = false,
     val delegates: List<DelegateItem> = listOf()
 )
@@ -28,7 +27,6 @@ sealed class Event {
 
     sealed class Internal : Event() {
         data class LoadedDocList(val items: List<DocumentItem>) : Internal()
-        data class LoadedBox(val box: Box) : Internal()
     }
 }
 
@@ -42,6 +40,5 @@ sealed class Effect {
 }
 
 sealed class Command {
-    data class LoadBox(val boxId: Int) : Command()
     data class LoadDocList(val boxId: Int) : Command()
 }

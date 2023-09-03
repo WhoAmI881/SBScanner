@@ -3,6 +3,7 @@ package com.example.sbscanner.presentation.utils
 import android.app.AlertDialog
 import android.content.Context
 import android.view.View
+import android.widget.EditText
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
@@ -15,17 +16,22 @@ fun View.showSnackbar(message: String) {
     ).show()
 }
 
-fun Context.showDialogConfirm(title: String, question: String, onConfirm: () -> Unit) {
+fun Context.showDialogConfirm(
+    title: String,
+    question: String,
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit
+) {
     val alertDialog = AlertDialog.Builder(this)
         .setTitle(title)
         .setMessage(question)
         .setPositiveButton("Да") { dialog, _ ->
-            dialog.dismiss()
             onConfirm()
         }
         .setNegativeButton("Отмена") { dialog, _ ->
-            dialog.dismiss()
+            onCancel()
         }
+        .setCancelable(false)
         .create()
     alertDialog.show()
 }
@@ -51,4 +57,10 @@ fun Fragment.onBackPressed(callback: () -> Unit) {
                 callback()
             }
         })
+}
+
+fun EditText.setIfNotEqual(value: String){
+    if(this.text.toString() != value){
+        this.setText(value)
+    }
 }

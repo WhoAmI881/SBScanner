@@ -3,7 +3,7 @@ package com.example.sbscanner.domain.usecase
 import com.example.sbscanner.domain.repository.ImageRepository
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-class GetImageListInDocumentUseCase(
+class GetImageListUseCase(
     private val imageRepository: ImageRepository
 ) {
 

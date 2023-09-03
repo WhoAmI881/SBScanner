@@ -15,7 +15,7 @@ class DeleteBoxViewModel(
     private val removeBoxUseCase: RemoveBoxUseCase,
 ) : BaseViewModel<Event, Effect, Command, State>(State()) {
 
-    override suspend fun reduce(event: Event) {
+    override fun reduce(event: Event) {
         when (event) {
             is Event.Ui.Init -> {
                 setState(currentState.copy(boxId = event.boxId))

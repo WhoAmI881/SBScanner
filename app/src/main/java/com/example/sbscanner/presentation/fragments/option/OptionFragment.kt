@@ -36,11 +36,13 @@ class OptionFragment : Fragment() {
                 }else{
                     requireContext().showDialogConfirm(
                         "Обновление конфигурации",
-                        "После обновления конфигурации приложение перезапустится"
-                    ){
-                        fileManager.updateUrlOption(UrlOption(baseUrl, port.toInt()))
-                        ProcessPhoenix.triggerRebirth(requireContext())
-                    }
+                        "После обновления конфигурации приложение перезапустится",
+                        {
+                            fileManager.updateUrlOption(UrlOption(baseUrl, port.toInt()))
+                            ProcessPhoenix.triggerRebirth(requireContext())
+                        },
+                        {}
+                    )
                 }
             }
             cancel.setOnClickListener {

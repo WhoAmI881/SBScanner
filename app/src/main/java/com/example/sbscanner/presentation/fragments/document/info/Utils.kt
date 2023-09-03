@@ -4,9 +4,11 @@ import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
 import androidx.core.view.isVisible
+import androidx.core.widget.doOnTextChanged
 import com.example.sbscanner.databinding.TemplateDocumentFormBinding
 import com.example.sbscanner.domain.models.Document
 import com.example.sbscanner.domain.utils.EMPTY_ID
+import com.example.sbscanner.presentation.utils.setIfNotEqual
 import java.util.*
 
 data class FormData(
@@ -36,14 +38,39 @@ fun Document.toFormData() = FormData(
     isSimpleInventory = isSimpleInventory,
 )
 
+fun TemplateDocumentFormBinding.doOnChangeField(
+    action: (form: FormData) -> Unit
+) {
+    docTitle.doOnTextChanged { text, _, _, _ ->
+        text?.let {
+            val formData = this.getFormData().copy(title = it.toString())
+            action(formData)
+        }
+    }
+    docDate.addTextChangedListener(DateMask(
+        onChange = {
+            val formData = this.getFormData().copy(date = it)
+            action(formData)
+        }
+    ))
+    docNote.doOnTextChanged { text, _, _, _ ->
+        text?.let {
+            val formData = this.getFormData().copy(note = it.toString())
+            action(formData)
+        }
+    }
+    isSimpleInventory.setOnClickListener {
+        val formData = this.getFormData()
+        action(formData)
+    }
+}
+
 fun TemplateDocumentFormBinding.setFormData(formData: FormData) {
     docBarcode.text = formData.barcode
-    docTitle.setText(formData.title)
-    docDate.setText(formData.date)
-    docDate.addTextChangedListener(DateMask())
-    docNote.setText(formData.note)
     isSimpleInventory.isChecked = formData.isSimpleInventory
-    root.isVisible = true
+    docTitle.setIfNotEqual(formData.title)
+    docDate.setIfNotEqual(formData.date)
+    docNote.setIfNotEqual(formData.note)
 }
 
 fun TemplateDocumentFormBinding.getFormData() = FormData(
@@ -75,7 +102,7 @@ fun dateFormat(day: Int, month: Int, year: Int) =
     (day.toString() + "/" + (month + 1) + "/" + year)
 
 
-class DateMask : TextWatcher {
+class DateMask(private val onChange: (date: String) -> Unit) : TextWatcher {
     private var updatedText: String? = null
     private var editing = false
     override fun beforeTextChanged(
@@ -114,6 +141,7 @@ class DateMask : TextWatcher {
         editing = true
         editable.clear()
         editable.insert(0, updatedText)
+        updatedText?.let { onChange(it) }
         editing = false
     }
 
