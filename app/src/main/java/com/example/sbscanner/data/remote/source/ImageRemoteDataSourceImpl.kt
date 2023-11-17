@@ -1,11 +1,10 @@
 package com.example.sbscanner.data.remote.source
 
-import android.graphics.Bitmap
+import android.util.Base64
 import com.example.sbscanner.data.remote.retrofit.api.ImageApi
 import com.example.sbscanner.data.remote.retrofit.getResponse
 import com.example.sbscanner.data.remote.retrofit.models.Form
 import com.example.sbscanner.data.remote.retrofit.safeApiCall
-import com.example.sbscanner.data.remote.retrofit.toBase64
 import com.example.sbscanner.data.source.remote.ImageRemoteDataSource
 import com.example.sbscanner.domain.models.SendImageForm
 import kotlinx.coroutines.Dispatchers
@@ -14,22 +13,22 @@ class ImageRemoteDataSourceImpl(
     private val imageApi: ImageApi
 ) : ImageRemoteDataSource {
 
-    override suspend fun sendImage(form: SendImageForm, bitmap: Bitmap) =
+    override suspend fun sendImage(form: SendImageForm, bytes: ByteArray) =
         safeApiCall(Dispatchers.IO) {
             val data = Form(
                 SAVE.format(
                     form.sessionId,
                     form.box.barcode,
-                    form.boxCreate,
+                    form.box.dateCreate,
                     form.document.barcode,
                     form.document.title,
                     form.document.date,
                     form.document.note,
                     if (form.document.isSimpleInventory) "1" else "0",
-                    form.docCreate,
+                    form.document.dateCreate,
                     form.image.id,
-                    bitmap.toBase64(),
-                    form.imgCreate,
+                    Base64.encodeToString(bytes, Base64.DEFAULT),
+                    form.image.dateCreate,
                     if (form.isLastImgInBox) "1" else "0",
                 )
             )

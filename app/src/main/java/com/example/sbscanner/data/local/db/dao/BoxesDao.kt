@@ -30,12 +30,6 @@ interface BoxesDao {
     @Query("DELETE FROM boxes WHERE id = :boxId")
     suspend fun deleteBox(boxId: Int)
 
-    @Query("SELECT * FROM boxes WHERE id = :boxId")
-    suspend fun getBoxById(boxId: Int): BoxDbEntity?
-
-    @Query("SELECT * FROM boxes WHERE task_id = :taskId")
-    suspend fun getBoxesByTaskId(taskId: Int): List<BoxDbEntity>
-
     @Transaction
     @Query("SELECT * FROM boxes")
     suspend fun getBoxesWithDocuments(): List<BoxWithDocumentsDbEntity>

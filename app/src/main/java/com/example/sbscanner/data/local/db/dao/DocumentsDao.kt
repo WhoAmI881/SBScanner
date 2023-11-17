@@ -33,7 +33,4 @@ interface DocumentsDao {
 
     @Query("SELECT * FROM documents WHERE box_id = :boxId and barcode = :barcode")
     suspend fun getDocumentByParams(boxId: Int, barcode: String): DocumentDbEntity?
-
-    @Query("SELECT * FROM documents WHERE barcode = :barcode")
-    suspend fun getDocumentByParams(barcode: String): DocumentDbEntity?
 }

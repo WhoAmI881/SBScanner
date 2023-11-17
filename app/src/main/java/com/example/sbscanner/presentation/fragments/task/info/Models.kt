@@ -16,6 +16,7 @@ sealed class Event {
         data class BarcodeUserIdReceived(val barcode: String) : Ui()
         data class ConfirmClick(val taskBarcode: String, val userId: String) : Ui()
         data class InputUserId(val value: String): Ui()
+        data class InputTask(val value: String): Ui()
         object DeleteTaskClick : Ui()
     }
 

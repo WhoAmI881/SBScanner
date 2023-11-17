@@ -8,6 +8,6 @@
 
     <include
         android:id="@+id/camera"
-        layout="@layout/template_camera" />
+        layout="@layout/template_camera_x" />
 
 </FrameLayout>

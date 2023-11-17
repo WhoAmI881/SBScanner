@@ -12,10 +12,13 @@ import android.view.SurfaceHolder
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import com.example.sbscanner.domain.models.Camera
 import kotlinx.coroutines.*
+import java.io.ByteArrayOutputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+
 
 sealed class InitCameraResult {
     object Success : InitCameraResult()
@@ -24,7 +27,7 @@ sealed class InitCameraResult {
 
 class CameraScanner(
     private val option: CameraOption,
-) {
+) : Camera {
     private lateinit var cameraDevice: CameraDevice
 
     private lateinit var cameraSession: CameraCaptureSession
@@ -33,7 +36,7 @@ class CameraScanner(
 
     private lateinit var targets: List<Surface>
 
-    private val scanner = Scanner()
+    private val scanner = Scanner(intArrayOf())
 
     private val cameraThread = HandlerThread("CameraThread").apply { start() }
 
@@ -47,7 +50,14 @@ class CameraScanner(
         option.outputSize.width,
         option.outputSize.height,
         ImageFormat.JPEG,
-        5
+        1
+    )
+
+    private val imageReaderAnalyzer: ImageReader = ImageReader.newInstance(
+        option.outputSize.width,
+        option.outputSize.height,
+        ImageFormat.YUV_420_888,
+        1
     )
 
     private val lifecycleObserver = object : DefaultLifecycleObserver {
@@ -86,7 +96,7 @@ class CameraScanner(
         withContext(Dispatchers.Main) {
             try {
                 cameraDevice = openCamera(option.cameraManager, option.cameraId, cameraHandler)
-                targets = listOf(holder.surface, imageReader.surface)
+                targets = listOf(holder.surface, imageReader.surface, imageReaderAnalyzer.surface)
                 cameraSession = createCaptureSession(cameraDevice, targets, cameraHandler)
                 cameraLifecycle = lifecycle
                 cameraLifecycle?.addObserver(lifecycleObserver)
@@ -97,7 +107,7 @@ class CameraScanner(
             }
         }
 
-    fun startPreview() {
+    override suspend fun startPreview() {
         val captureRequest = cameraDevice.createCaptureRequest(
             CameraDevice.TEMPLATE_PREVIEW
         ).apply {
@@ -106,12 +116,14 @@ class CameraScanner(
         cameraSession.setRepeatingRequest(captureRequest.build(), null, cameraHandler)
     }
 
-    suspend fun takePhoto(): Bitmap = suspendCancellableCoroutine { cont ->
+    override suspend fun takePhoto(): ByteArray = suspendCancellableCoroutine { cont ->
         imageReader.setOnImageAvailableListener(ImageReader.OnImageAvailableListener { reader ->
             val image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
-            val bitmap = image.toBitmap().rotate(90f)
             if (cont.isActive) {
-                cont.resume(bitmap)
+                val bitmap = image.toBitmap().rotate(90f)
+                val stream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                cont.resume(stream.toByteArray())
             }
             image.close()
         }, imageReaderHandler)
@@ -123,28 +135,33 @@ class CameraScanner(
         cameraSession.capture(captureRequest.build(), null, cameraHandler)
     }
 
-    suspend fun startScanning(regex: Regex? = null): String = suspendCancellableCoroutine { cont ->
-        imageReader.setOnImageAvailableListener(ImageReader.OnImageAvailableListener { reader ->
-            val image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
-            val result = scanner.scanBitmap(image.toBitmap(), regex)
-            if(result !is ScannerResult.Success){
-                image.close()
-                return@OnImageAvailableListener
-            }
-            if (cont.isActive) {
-                cont.resume(result.barcode)
-            }
-            image.close()
-        }, imageReaderHandler)
-
-        val captureRequest = cameraDevice.createCaptureRequest(
-            CameraDevice.TEMPLATE_PREVIEW
-        ).apply {
-            addTarget(targets[0])
-            addTarget(targets[1])
-        }
-        cameraSession.setRepeatingRequest(captureRequest.build(), null, cameraHandler)
+    override suspend fun takePhotoString(): String {
+        TODO("Not yet implemented")
     }
+
+    override suspend fun startScanning(regex: Regex?): String =
+        suspendCancellableCoroutine { cont ->
+            imageReader.setOnImageAvailableListener(ImageReader.OnImageAvailableListener { reader ->
+                val image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
+                val result = scanner.scanImage(image, regex)
+                if (result !is ScannerResult.Success) {
+                    image.close()
+                    return@OnImageAvailableListener
+                }
+                if (cont.isActive) {
+                    cont.resume(result.barcode)
+                }
+                image.close()
+            }, imageReaderHandler)
+
+            val captureRequest = cameraDevice.createCaptureRequest(
+                CameraDevice.TEMPLATE_PREVIEW
+            ).apply {
+                addTarget(targets[0])
+                addTarget(targets[1])
+            }
+            cameraSession.setRepeatingRequest(captureRequest.build(), null, cameraHandler)
+        }
 
     @SuppressLint("MissingPermission")
     private suspend fun openCamera(
@@ -154,7 +171,7 @@ class CameraScanner(
     ): CameraDevice = suspendCancellableCoroutine { cont ->
         manager.openCamera(cameraId, object : CameraDevice.StateCallback() {
             override fun onOpened(device: CameraDevice) {
-               cont.resume(device)
+                cont.resume(device)
             }
 
             override fun onDisconnected(device: CameraDevice) {}
@@ -194,6 +211,6 @@ class CameraScanner(
     }
 
     companion object {
-        private val TAG = CameraScanner::class.java.simpleName
+        private val TAG = Camera::class.java.simpleName
     }
 }

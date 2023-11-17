@@ -19,8 +19,4 @@ interface DocumentLocalDataSource {
     suspend fun removeDocument(docId: Int)
 
     suspend fun getDocumentById(docId: Int): Document?
-
-    suspend fun getDocumentByBarcode(docBarcode: String): Document?
-
-    suspend fun getDocumentByParams(boxId: Int, docBarcode: String): Document?
 }

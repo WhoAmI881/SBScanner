@@ -33,6 +33,6 @@ sealed class Effect {
 
 sealed class Command {
     data class LoadImage(val imgId: Int) : Command()
-    data class RemoveImage(val image: Image) : Command()
-    data class SaveImage(val docId: Int, val image: Image) : Command()
+    data class RemoveImage(val imgId: Int) : Command()
+    data class SaveImage(val docId: Int, val imgPath: String) : Command()
 }

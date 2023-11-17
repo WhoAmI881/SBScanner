@@ -20,10 +20,6 @@ class DocumentRepositoryImpl(
         return documentLocalDataSource.getFullDocumentsByBoxId(boxId)
     }
 
-    override suspend fun getDocumentsByBoxId(boxId: Int): List<Document> {
-        return documentLocalDataSource.getDocumentsByBoxId(boxId)
-    }
-
     override suspend fun updateDocument(boxId: Int, document: Document) {
         documentLocalDataSource.updateDocument(boxId, document)
     }
@@ -38,13 +34,5 @@ class DocumentRepositoryImpl(
 
     override suspend fun getDocumentById(docId: Int): Document? {
         return documentLocalDataSource.getDocumentById(docId)
-    }
-
-    override suspend fun getDocumentByParams(boxId: Int, docBarcode: String): Document? {
-        return documentLocalDataSource.getDocumentByParams(boxId, docBarcode)
-    }
-
-    override suspend fun getDocumentByBarcode(docBarcode: String): Document? {
-        return documentLocalDataSource.getDocumentByBarcode(docBarcode)
     }
 }

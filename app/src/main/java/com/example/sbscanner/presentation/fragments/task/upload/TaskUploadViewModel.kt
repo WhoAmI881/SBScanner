@@ -124,6 +124,9 @@ class TaskUploadViewModel(
                         errorType = ErrorType.CONNECTION
                     )
                 )
+                event.message?.let {
+                    commitEffect(Effect.ShowIOErrorMessage(it))
+                }
             }
         }
     }
@@ -147,7 +150,7 @@ class TaskUploadViewModel(
                         }
                     }
                     is SessionResult.LostConnection -> {
-                        emit(Event.Internal.ErrorConnection)
+                        emit(Event.Internal.ErrorConnection(result.message))
                     }
                 }
             }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.camera.view.PreviewView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
@@ -11,19 +12,30 @@ import com.example.sbscanner.App
 import com.example.sbscanner.databinding.FragmentTaskScannerBinding
 import com.example.sbscanner.presentation.fragments.base.*
 import com.example.sbscanner.presentation.fragments.task.info.TaskInfoFragment
+import com.example.sbscanner.presentation.fragments.test.detectedBarcodeState
+import com.example.sbscanner.presentation.fragments.test.failedState
+import com.example.sbscanner.presentation.fragments.test.initState
+import com.example.sbscanner.presentation.fragments.test.scanningState
+import com.example.sbscanner.presentation.fragments.test.setBackAction
 import com.example.sbscanner.presentation.navigation.Presenter
+import com.google.mlkit.vision.barcode.common.Barcode
 
-class TaskScannerFragment : CameraFragment<Event, Effect, Command, State>() {
+class TaskScannerFragment : CameraXFragment<Event, Effect, Command, State>() {
 
     private lateinit var binding: FragmentTaskScannerBinding
 
     private val presenter = Presenter(App.INSTANCE.router)
 
-    override val viewModel: TaskScannerViewModel by viewModels { TaskScannerViewModel.Factory }
+    override val previewView: PreviewView
+        get() = binding.camera.preview
 
-    override fun getSurfaceTexture(): AutoFitSurfaceView {
-        return binding.camera.holder
-    }
+    override val scanningFormats = intArrayOf(
+        Barcode.FORMAT_CODE_128,
+        Barcode.FORMAT_EAN_13,
+        Barcode.FORMAT_CODE_39
+    )
+
+    override val viewModel: TaskScannerViewModel by viewModels { TaskScannerViewModel.Factory }
 
     override val initEvent = Event.Ui.Init
 
@@ -37,31 +49,45 @@ class TaskScannerFragment : CameraFragment<Event, Effect, Command, State>() {
         return binding.root
     }
 
-    override fun handleCameraEvent(event: CameraEvent) {
+    override fun handleCameraEvent(event: CameraXEvents) {
         when (event) {
-            is CameraEvent.StartInit -> {
-                viewModel.commitEvent(Event.Ui.ChangeCameraState(CameraState.INIT))
+            is CameraXEvents.CameraOpening -> {
+                viewModel.commitEvent(Event.Ui.ChangeCameraState(CameraStateType.INIT))
             }
-            is CameraEvent.FailedInit -> {
-                viewModel.commitEvent(Event.Ui.ChangeCameraState(CameraState.FAILED))
+
+            is CameraXEvents.CameraFailed -> {
+                viewModel.commitEvent(Event.Ui.ChangeCameraState(CameraStateType.FAILED))
             }
-            is CameraEvent.SuccessInit -> {
-                viewModel.commitEvent(Event.Ui.CameraInit(event.cameraScanner))
+
+            is CameraXEvents.CameraOpen -> {
+                viewModel.commitEvent(Event.Ui.ChangeCameraState(CameraStateType.OPEN))
             }
+
+            is CameraXEvents.BarcodeFound -> {
+                setFragmentResult(
+                    TaskInfoFragment.KEY_REQUEST,
+                    bundleOf(TaskInfoFragment.KEY_BUNDLE to event.barcode)
+                )
+                presenter.back()
+            }
+
+            else -> {}
         }
     }
 
     override fun renderState(state: State) = with(binding) {
-        when (state.cameraState) {
-            CameraState.INIT -> camera.initState()
-            CameraState.FAILED -> camera.failedState()
-            CameraState.SUCCESS -> when (state.formState) {
-                FormState.SCANNING -> {
+        when (state.cameraStateType) {
+            CameraStateType.INIT -> camera.initState()
+            CameraStateType.FAILED -> camera.failedState()
+            CameraStateType.OPEN -> when (state.formStateType) {
+                FormStateType.SCANNING -> {
                     camera.scanningState()
                 }
-                FormState.BARCODE_FOUND -> {
+
+                FormStateType.BARCODE_FOUND -> {
                     camera.detectedBarcodeState()
                 }
+
                 else -> {}
             }
         }
@@ -69,12 +95,8 @@ class TaskScannerFragment : CameraFragment<Event, Effect, Command, State>() {
 
     override fun handleEffect(effect: Effect) {
         when (effect) {
-            is Effect.ReturnBack -> {
-                setFragmentResult(
-                    TaskInfoFragment.KEY_REQUEST,
-                    bundleOf(TaskInfoFragment.KEY_BUNDLE to effect.barcode)
-                )
-                presenter.back()
+            is Effect.StartScanning -> {
+                super.startScanning()
             }
         }
     }

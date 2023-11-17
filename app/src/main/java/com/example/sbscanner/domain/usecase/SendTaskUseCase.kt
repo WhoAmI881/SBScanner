@@ -39,23 +39,18 @@ class SendTaskUseCase(
 
         boxes.forEach { fbox ->
             val lastImgInBox = fbox.documents.flatMap { it.images }.last()
-            val boxCreate = fbox.box.timestamp.toDate()
             fbox.documents.forEach { fdoc ->
-                val docCreate = fdoc.document.timestamp.toDate()
                 fdoc.images.filter { it.isSending.not() }.forEach { img ->
                     val form = SendImageForm(
                         sessionId = sessionId,
                         image = img,
-                        imgCreate = img.timestamp.toDate(),
                         box = fbox.box,
-                        boxCreate = boxCreate,
                         document = fdoc.document,
-                        docCreate = docCreate,
                         isLastImgInBox = img.id == lastImgInBox.id
                     )
 
                     var result = imageRepository.sendImage(form)
-                    while (result is ResultWrapper.NetworkError) {
+                    while (result is ResultWrapper.IOError) {
                         emit(SendTaskResult.LoseConnection)
                         delay(1000)
                         result = imageRepository.sendImage(form)
@@ -68,6 +63,7 @@ class SendTaskUseCase(
                             emit(SendTaskResult.ServerError)
                             return@flow
                         }
+
                         else -> {
                             emit(SendTaskResult.ServerError)
                             return@flow

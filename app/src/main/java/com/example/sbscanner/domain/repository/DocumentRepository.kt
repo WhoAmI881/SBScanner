@@ -10,8 +10,6 @@ interface DocumentRepository {
 
     suspend fun getFullDocumentsByBoxId(boxId: Int): List<FullDocument>
 
-    suspend fun getDocumentsByBoxId(boxId: Int): List<Document>
-
     suspend fun updateDocument(boxId: Int, document: Document)
 
     suspend fun addDocument(boxId: Int, document: Document): Int
@@ -19,8 +17,4 @@ interface DocumentRepository {
     suspend fun removeDocument(docId: Int)
 
     suspend fun getDocumentById(docId: Int): Document?
-
-    suspend fun getDocumentByParams(boxId: Int, docBarcode: String): Document?
-
-    suspend fun getDocumentByBarcode(docBarcode: String): Document?
 }

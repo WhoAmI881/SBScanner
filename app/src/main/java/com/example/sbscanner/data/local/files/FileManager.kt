@@ -1,10 +1,7 @@
 package com.example.sbscanner.data.local.files
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import java.io.File
-import java.io.FileOutputStream
 import java.util.*
 
 data class UrlOption(
@@ -15,10 +12,9 @@ data class UrlOption(
 class FileManager(context: Context) {
 
     private val filesDir = context.filesDir
-    private val cacheDir = context.cacheDir
     private val preferences = context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
 
-    fun updateUrlOption(option: UrlOption){
+    fun updateUrlOption(option: UrlOption) {
         val editor = preferences.edit()
         editor.putString(KEY_URL, option.baseUrl)
         editor.putInt(KEY_PORT, option.port)
@@ -31,38 +27,16 @@ class FileManager(context: Context) {
         return UrlOption(url, port)
     }
 
-    fun saveBitmap(bitmap: Bitmap): String {
-        val file = createFile(UUID.randomUUID().toString())
-        if (file.exists()) file.delete()
-
-        try {
-            val out = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-            out.flush()
-            out.close()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return ""
-        }
-        return file.path
-    }
-
-    fun saveBitmapAsTempFileInInternalStorage(bitmap: Bitmap): String? {
-        val file = createTempFile()
-        if (file.exists()) file.delete()
-        return try {
-            val out = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-            out.flush()
-            out.close()
-            file.path
-        } catch (e: Exception) {
-            e.printStackTrace()
+    fun getBytesFromFile(filePath: String): ByteArray? {
+        val file = File(filePath)
+        return if (file.exists()) {
+            file.readBytes()
+        } else {
             null
         }
     }
 
-    fun getTempFileFromInternalStorage(path: String): File? {
+    fun getFileFromInternalStorage(path: String): File? {
         val file = File(path)
         return if (file.exists()) {
             file
@@ -71,7 +45,7 @@ class FileManager(context: Context) {
         }
     }
 
-    fun saveTempFileInInternalStorage(temp: File): String? {
+    fun transferFileInInternalStorage(temp: File): String? {
         val file = createFile(UUID.randomUUID().toString())
         if (file.exists()) file.delete()
         return try {
@@ -80,15 +54,6 @@ class FileManager(context: Context) {
             return file.path
         } catch (e: Exception) {
             e.printStackTrace()
-            null
-        }
-    }
-
-    fun getBitmap(path: String): Bitmap? {
-        val file = File(path)
-        return if (file.exists()) {
-            BitmapFactory.decodeFile(path)
-        } else {
             null
         }
     }
@@ -104,13 +69,10 @@ class FileManager(context: Context) {
 
     private fun createFile(fileName: String) = File(filesDir, fileName + JPEG_EX)
 
-    private fun createTempFile() = File(cacheDir, TEMP_NAME + JPEG_EX)
-
     companion object {
         private const val JPEG_EX = ".jpg"
-        private const val TEMP_NAME = "temp"
-        private const val DEFAULT_URL = "https://procn.archiv.ru"
-        private const val DEFAULT_PORT = 4433
+        private const val DEFAULT_URL = "http://procn.archiv.ru"
+        private const val DEFAULT_PORT = 8099
 
         private const val SHARED_PREF_NAME = "BASE_URL_OPTION"
         private const val KEY_PORT = "KEY_PORT"

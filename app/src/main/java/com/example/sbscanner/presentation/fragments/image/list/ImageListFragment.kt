@@ -16,6 +16,7 @@ import com.example.sbscanner.presentation.adapters.images.ImageDelegate
 import com.example.sbscanner.presentation.adapters.images.ImagesAdapter
 import com.example.sbscanner.presentation.adapters.images.ImagesAdapterListener
 import com.example.sbscanner.presentation.fragments.base.BaseFragment
+import com.example.sbscanner.presentation.fragments.dialogs.form.image.FormImageDialog
 import com.example.sbscanner.presentation.navigation.Presenter
 
 class ImageListFragment : BaseFragment<Event, Effect, Command, State>() {
@@ -79,7 +80,8 @@ class ImageListFragment : BaseFragment<Event, Effect, Command, State>() {
     override fun handleEffect(effect: Effect) {
         when (effect) {
             is Effect.OpenImage -> {
-                presenter.onImageInfoOpen(effect.imgId)
+                val dialog = FormImageDialog.newInstance(effect.imgId)
+                dialog.show(childFragmentManager, FormImageDialog::class.simpleName)
             }
             is Effect.ReturnBack -> {
                 presenter.back()

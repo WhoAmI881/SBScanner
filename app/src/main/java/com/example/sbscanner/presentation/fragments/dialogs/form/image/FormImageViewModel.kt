@@ -25,25 +25,28 @@ class FormImageViewModel(
                 setState(currentState.copy(imgId = event.imgId))
                 commitCommand(Command.LoadImage(event.imgId))
             }
+
             is Event.Ui.InitAdd -> {
                 setState(currentState.copy(docId = event.docId, imgPath = event.imgPath))
             }
+
             is Event.Ui.CancelClick -> {}
             is Event.Ui.RemoveClick -> {
-                val image = Image(id = currentState.imgId, path = currentState.imgPath)
-                commitCommand(Command.RemoveImage(image))
+                commitCommand(Command.RemoveImage(currentState.imgId))
             }
+
             is Event.Ui.SaveClick -> {
-                val image = Image(path = currentState.imgPath)
-                commitCommand(Command.SaveImage(currentState.docId, image))
+                commitCommand(Command.SaveImage(currentState.docId, currentState.imgPath))
             }
 
             is Event.Internal.LoadedImage -> {
                 setState(currentState.copy(imgPath = event.image.path))
             }
+
             is Event.Internal.RemovedImage -> {
                 commitEffect(Effect.CloseDeleted)
             }
+
             is Event.Internal.SavedImage -> {
                 commitEffect(Effect.CloseSaved(event.imgId))
             }
@@ -57,12 +60,14 @@ class FormImageViewModel(
                     emit(Event.Internal.LoadedImage(it))
                 }
             }
+
             is Command.RemoveImage -> flow {
-                removeImageUseCase(command.image)
+                removeImageUseCase(command.imgId)
                 emit(Event.Internal.RemovedImage)
             }
+
             is Command.SaveImage -> flow {
-                val imgId = saveImageUseCase(command.docId, command.image)
+                val imgId = saveImageUseCase(command.docId, Image(path = command.imgPath))
                 emit(Event.Internal.SavedImage(imgId))
             }
         }

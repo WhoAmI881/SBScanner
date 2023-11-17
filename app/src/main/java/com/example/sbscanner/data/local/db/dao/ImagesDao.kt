@@ -24,13 +24,4 @@ interface ImagesDao {
 
     @Query("UPDATE images SET is_sending = :isSending WHERE id = :imageId")
     suspend fun updateIsSendingImage(imageId: Int, isSending: Boolean)
-
-    @Query("SELECT * FROM images WHERE is_sending = :isSending")
-    suspend fun getImagesBySendingFlag(isSending: Boolean): List<ImageDbEntity>
-
-    @Query("SELECT * FROM images")
-    fun getAllImagesFlow(): Flow<List<ImageDbEntity>>
-
-    @Query("SELECT * FROM images")
-    suspend fun getAllImages(): List<ImageDbEntity>
 }

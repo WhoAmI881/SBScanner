@@ -25,10 +25,10 @@ fun Context.showDialogConfirm(
     val alertDialog = AlertDialog.Builder(this)
         .setTitle(title)
         .setMessage(question)
-        .setPositiveButton("Да") { dialog, _ ->
+        .setPositiveButton("Да") { _, _ ->
             onConfirm()
         }
-        .setNegativeButton("Отмена") { dialog, _ ->
+        .setNegativeButton("Отмена") { _, _ ->
             onCancel()
         }
         .setCancelable(false)

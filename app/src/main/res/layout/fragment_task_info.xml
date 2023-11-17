@@ -84,10 +84,10 @@
                         android:id="@+id/user_id"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
                         android:layout_marginEnd="55dp"
                         android:background="@android:color/transparent"
                         android:minHeight="48dp"
-                        android:layout_centerVertical="true"
                         android:singleLine="true"
                         android:textSize="20sp" />
 
@@ -125,24 +125,31 @@
                 app:layout_constraintVertical_bias="0">
 
                 <RelativeLayout
-                    android:id="@+id/task_barcode"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginTop="13dp"
                     android:background="@drawable/bg_textview"
                     android:padding="15dp">
 
-                    <TextView
-                        android:id="@+id/value_barcode"
+                    <EditText
+                        android:id="@+id/task_barcode"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:hint="Сканирование"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="55dp"
+                        android:background="@android:color/transparent"
                         android:minHeight="48dp"
                         android:singleLine="true"
-                        android:layout_centerVertical="true"
-                        android:textColor="@color/black"
                         android:textSize="20sp" />
+
+                    <ImageView
+                        android:id="@+id/task_barcode_icon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_barcode" />
 
                 </RelativeLayout>
 

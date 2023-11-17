@@ -41,12 +41,4 @@ class DocumentLocalDataSourceImpl(
     override suspend fun getDocumentById(docId: Int): Document? {
         return documentsDao.getDocumentById(docId)?.toDomain()
     }
-
-    override suspend fun getDocumentByBarcode(docBarcode: String): Document? {
-        return documentsDao.getDocumentByParams(docBarcode)?.toDomain()
-    }
-
-    override suspend fun getDocumentByParams(boxId: Int, docBarcode: String): Document? {
-        return documentsDao.getDocumentByParams(boxId, docBarcode)?.toDomain()
-    }
 }

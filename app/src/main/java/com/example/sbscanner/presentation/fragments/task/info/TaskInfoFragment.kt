@@ -19,7 +19,6 @@ import com.example.sbscanner.domain.utils.EMPTY_ID
 import com.example.sbscanner.domain.utils.isNotEmptyId
 import com.example.sbscanner.presentation.fragments.base.BaseFragment
 import com.example.sbscanner.presentation.fragments.dialogs.delete.task.DeleteTaskDialog
-import com.example.sbscanner.presentation.fragments.dialogs.test.TestDialog
 import com.example.sbscanner.presentation.navigation.Presenter
 import com.example.sbscanner.presentation.utils.setIfNotEqual
 import com.example.sbscanner.presentation.utils.showDialogConfirm
@@ -53,13 +52,14 @@ class TaskInfoFragment : BaseFragment<Event, Effect, Command, State>() {
                 hideKeyboard()
                 viewModel.commitEvent(
                     Event.Ui.ConfirmClick(
-                        taskBarcode = valueBarcode.text.toString().trim(),
+                        taskBarcode = taskBarcode.text.toString().trim(),
                         userId = userId.text.toString().trim()
                     )
                 )
             }
             cancel.setOnClickListener { presenter.back() }
-            taskBarcode.setOnClickListener {
+
+            taskBarcodeIcon.setOnClickListener {
                 setScannerResultListener(KEY_REQUEST, KEY_BUNDLE) {
                     viewModel.commitEvent(Event.Ui.BarcodeTaskReceived(it))
                 }
@@ -71,12 +71,12 @@ class TaskInfoFragment : BaseFragment<Event, Effect, Command, State>() {
                 }
                 presenter.onTaskScannerOpen()
             }
-            taskIcon.setOnClickListener {
-                val dialog = TestDialog.newInstance()
-                dialog.show(childFragmentManager, TestDialog::class.simpleName)
+
+            taskBarcode.doOnTextChanged { text, _, _, _ ->
+                text?.let { viewModel.commitEvent(Event.Ui.InputTask(it.toString().trim())) }
             }
             userId.doOnTextChanged { text, _, _, _ ->
-                text?.let { viewModel.commitEvent(Event.Ui.InputUserId(it.toString())) }
+                text?.let { viewModel.commitEvent(Event.Ui.InputUserId(it.toString().trim())) }
             }
         }
         return binding.root
@@ -84,22 +84,26 @@ class TaskInfoFragment : BaseFragment<Event, Effect, Command, State>() {
 
     override fun renderState(state: State) = with(binding) {
         userId.setIfNotEqual(state.userId)
-        valueBarcode.text = state.taskBarcode
+        taskBarcode.setIfNotEqual(state.taskBarcode)
     }
 
     override fun handleEffect(effect: Effect) = when (effect) {
         is Effect.OpenBoxList -> {
             presenter.onBoxListOpen(effect.taskId)
         }
+
         is Effect.ReturnBack -> {
             presenter.back()
         }
+
         is Effect.ErrorUpdate -> {
             requireView().showSnackbar(resources.getString(R.string.error_update_task))
         }
+
         is Effect.EmptyData -> {
             requireView().showSnackbar(resources.getString(R.string.empty_task))
         }
+
         is Effect.OpenTaskDeleteDialog -> {
             val dialog = DeleteTaskDialog.newInstance(effect.taskId)
             dialog.show(childFragmentManager, DeleteTaskDialog::class.simpleName)
@@ -139,6 +143,7 @@ class TaskInfoFragment : BaseFragment<Event, Effect, Command, State>() {
                 ID_EDIT -> {
                     presenter.onOptionOpen()
                 }
+
                 ID_DELETE -> {
                     requireContext().showDialogConfirm(
                         "Удаление задания",

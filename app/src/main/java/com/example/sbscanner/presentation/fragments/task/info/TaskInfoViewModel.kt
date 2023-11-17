@@ -24,15 +24,23 @@ class TaskInfoViewModel(
                 setState(currentState.copy(taskId = event.taskId))
                 commitCommand(Command.LoadTask(event.taskId))
             }
+
             is Event.Ui.BarcodeTaskReceived -> {
                 setState(currentState.copy(taskBarcode = event.barcode))
             }
+
             is Event.Ui.BarcodeUserIdReceived -> {
                 setState(currentState.copy(userId = event.barcode))
             }
+
             is Event.Ui.InputUserId -> {
                 setState(currentState.copy(userId = event.value))
             }
+
+            is Event.Ui.InputTask -> {
+                setState(currentState.copy(taskBarcode = event.value))
+            }
+
             is Event.Ui.ConfirmClick -> with(event) {
                 if (userId.isBlank() || taskBarcode.isBlank()) {
                     commitEffect(Effect.EmptyData)
@@ -45,6 +53,7 @@ class TaskInfoViewModel(
                 )
                 commitCommand(Command.SaveTask(task))
             }
+
             is Event.Ui.DeleteTaskClick -> {
                 commitEffect(Effect.OpenTaskDeleteDialog(currentState.taskId))
             }
@@ -52,12 +61,15 @@ class TaskInfoViewModel(
             is Event.Internal.LoadedTask -> with(event.task) {
                 setState(currentState.copy(userId = userId, taskBarcode = barcode))
             }
+
             is Event.Internal.AddedTask -> {
                 commitEffect(Effect.OpenBoxList(event.taskId))
             }
+
             is Event.Internal.UpdatedTask -> {
                 commitEffect(Effect.ReturnBack)
             }
+
             is Event.Internal.ErrorUpdatedTask -> {
                 commitEffect(Effect.ErrorUpdate)
             }
@@ -70,14 +82,17 @@ class TaskInfoViewModel(
                 emit(Event.Internal.LoadedTask(it))
             }
         }
+
         is Command.SaveTask -> flow {
             when (val result = saveTaskUseCase(command.task)) {
                 is SaveTaskResult.TaskAdded -> {
                     emit(Event.Internal.AddedTask(result.taskId))
                 }
+
                 is SaveTaskResult.TaskUpdated -> {
                     emit(Event.Internal.UpdatedTask(result.taskId))
                 }
+
                 is SaveTaskResult.TaskAlreadyExists -> {
                     emit(Event.Internal.ErrorUpdatedTask)
                 }

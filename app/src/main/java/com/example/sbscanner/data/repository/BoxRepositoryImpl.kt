@@ -25,10 +25,6 @@ class BoxRepositoryImpl(
         return boxLocalDataSource.getFullBox(boxId)
     }
 
-    override suspend fun getBoxesByTaskId(taskId: Int): List<Box> {
-        return boxLocalDataSource.getBoxesByTaskId(taskId)
-    }
-
     override suspend fun getBoxId(taskId: Int, box: Box): Int {
         return boxLocalDataSource.getBoxId(taskId, box)
     }
@@ -39,10 +35,6 @@ class BoxRepositoryImpl(
 
     override suspend fun removeBox(boxId: Int) {
         boxLocalDataSource.removeBox(boxId)
-    }
-
-    override suspend fun getBox(boxId: Int): Box? {
-        return boxLocalDataSource.getBox(boxId)
     }
 
     override suspend fun getBoxesWithDocuments(): List<BoxWithDocuments> {

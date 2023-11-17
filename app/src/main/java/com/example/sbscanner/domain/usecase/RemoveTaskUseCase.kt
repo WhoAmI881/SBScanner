@@ -36,7 +36,7 @@ class RemoveTaskUseCase(
         boxes.forEach { box ->
             box.documents.forEach { doc ->
                 doc.images.forEach { img ->
-                    if (imageRepository.removeImage(img).not()) {
+                    if (imageRepository.removeImage(img.id).not()) {
                         emit(RemoveTaskResult.ErrorRemoveImage(img.id))
                         return@flow
                     }

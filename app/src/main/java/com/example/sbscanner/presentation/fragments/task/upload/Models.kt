@@ -43,7 +43,7 @@ sealed class Event {
         data class ErrorLoadedSession(val code: Int) : Internal()
         object ErrorUserId : Internal()
         object ErrorTaskBarcode : Internal()
-        object ErrorConnection: Internal()
+        data class ErrorConnection(val message: String?): Internal()
     }
 }
 
@@ -51,6 +51,7 @@ sealed class Effect {
     data class StartUploadService(val taskId: Int, val sessionId: Int) : Effect()
     data class ShowInitTaskError(val taskId: Int, val msg: String) : Effect()
     data class ShowErrorCode(val code: Int) : Effect()
+    data class ShowIOErrorMessage(val message: String): Effect()
 }
 
 sealed class Command {

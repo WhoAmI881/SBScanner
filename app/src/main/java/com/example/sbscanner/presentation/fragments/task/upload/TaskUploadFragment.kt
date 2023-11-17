@@ -99,7 +99,7 @@ class TaskUploadFragment : BaseFragment<Event, Effect, Command, State>() {
                 viewModel.commitEvent(Event.Ui.ReloadClick)
             }
         }
-        requireActivity().onBackPressedDispatcher.addCallback(this, backPressedCallback)
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backPressedCallback)
         return binding.root
     }
 
@@ -181,6 +181,12 @@ class TaskUploadFragment : BaseFragment<Event, Effect, Command, State>() {
                 requireContext().showDialogMessage(
                     "Server error",
                     "Error code: ${effect.code}"
+                ) {}
+            }
+            is Effect.ShowIOErrorMessage -> {
+                requireContext().showDialogMessage(
+                    "IO Error",
+                    effect.message
                 ) {}
             }
         }

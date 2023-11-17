@@ -19,16 +19,14 @@ abstract class BaseFragment<Event : Any, Effect : Any, Command : Any, State : An
     abstract fun handleEffect(effect: Effect)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        with(viewLifecycleOwner.lifecycleScope) {
-            launch {
-                repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    viewModel.state.collect { renderState(it) }
-                }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collect { renderState(it) }
             }
-            launch {
-                repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                    viewModel.effects.collect { handleEffect(it) }
-                }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.effects.collect { handleEffect(it) }
             }
         }
         viewModel.setInitEvent(initEvent)

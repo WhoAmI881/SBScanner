@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -30,9 +31,7 @@ abstract class BaseViewModel<Event : Any, Effect : Any, Command : Any, State : A
 
     private val jobs: MutableList<JobData> = mutableListOf()
 
-    private var initEvent: Event? = null
-
-    private val events: MutableSharedFlow<Event> = MutableSharedFlow()
+    private var initialized: Boolean = false
 
     private val commands: MutableSharedFlow<Event> = MutableSharedFlow()
 
@@ -41,6 +40,8 @@ abstract class BaseViewModel<Event : Any, Effect : Any, Command : Any, State : A
     private val _effects: MutableSharedFlow<Effect> = MutableSharedFlow()
 
     private val commandSub: MutableList<Command> = mutableListOf()
+
+    private val effectCash: MutableList<Effect> = mutableListOf()
 
     val state: StateFlow<State> = _state.asStateFlow()
 
@@ -51,7 +52,10 @@ abstract class BaseViewModel<Event : Any, Effect : Any, Command : Any, State : A
 
     init {
         viewModelScope.launch {
-            events.collect(::reduce)
+            _effects.subscriptionCount.filter { it != 0 }.collect {
+                effectCash.forEach { _effects.emit(it) }
+                effectCash.clear()
+            }
         }
     }
 
@@ -84,16 +88,13 @@ abstract class BaseViewModel<Event : Any, Effect : Any, Command : Any, State : A
     fun commitEvent(event: Event) {
         Log.i("EVENT", event.toString())
         reduce(event)
-        /*
-            viewModelScope.launch {
-                Log.i("EVENT", event.toString())
-                events.emit(event)
-        }
-         */
     }
 
     fun commitEffect(effect: Effect) {
-        Log.i("EFFECT", effect.toString())
+        if(_effects.subscriptionCount.value == 0){
+            effectCash.add(effect)
+            return
+        }
         viewModelScope.launch {
             _effects.emit(effect)
         }
@@ -123,11 +124,8 @@ abstract class BaseViewModel<Event : Any, Effect : Any, Command : Any, State : A
     }
 
     fun setInitEvent(event: Event) {
-        if (initEvent == null) {
-            initEvent = event
-            viewModelScope.launch {
-                events.emit(event)
-            }
-        }
+        if (initialized) return
+        initialized = true
+        reduce(event)
     }
 }

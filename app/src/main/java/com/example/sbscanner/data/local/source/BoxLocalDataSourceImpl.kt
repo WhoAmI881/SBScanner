@@ -26,10 +26,6 @@ class BoxLocalDataSourceImpl(
         return boxesDao.getFullBoxById(boxId)?.toDomain()
     }
 
-    override suspend fun getBoxesByTaskId(taskId: Int): List<Box> {
-        return boxesDao.getBoxesByTaskId(taskId).map { it.toDomain() }
-    }
-
     override suspend fun getBoxId(taskId: Int, box: Box): Int {
         return boxesDao.getBoxByParams(taskId, box.barcode)?.id ?: 0
     }
@@ -40,10 +36,6 @@ class BoxLocalDataSourceImpl(
 
     override suspend fun removeBox(boxId: Int) {
         boxesDao.deleteBox(boxId)
-    }
-
-    override suspend fun getBox(boxId: Int): Box? {
-        return boxesDao.getBoxById(boxId)?.toDomain()
     }
 
     override suspend fun getBoxesWithDocuments(): List<BoxWithDocuments> {

@@ -20,7 +20,7 @@ sealed class SessionResult {
 
     data class ErrorRequest(val error: ErrorCode) : SessionResult()
 
-    object LostConnection : SessionResult()
+    data class LostConnection(val message: String?) : SessionResult()
 
     data class Success(val sessionId: Int) : SessionResult()
 }
@@ -53,8 +53,8 @@ class GetSessionTaskUseCase(
             is ResultWrapper.ParseError -> {
                 SessionResult.ErrorRequest(ErrorCode.PARSE)
             }
-            is ResultWrapper.NetworkError -> {
-                SessionResult.LostConnection
+            is ResultWrapper.IOError    -> {
+                SessionResult.LostConnection(result.message)
             }
         }
     }

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".presentation.fragments.base.CameraXFragment">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <RelativeLayout
+        android:id="@+id/barcodeRect"
+        android:layout_width="300dp"
+        android:layout_height="100dp"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center"
+        android:background="@drawable/ic_box_red">
+
+        <View
+            android:id="@+id/anim_scanner"
+            android:layout_width="5dp"
+            android:layout_height="match_parent"
+            android:background="@color/red"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_centerInParent="true" />
+
+    <Button
+        android:id="@+id/photo_button"
+        android:layout_width="300dp"
+        android:layout_height="90dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:text="Фото"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/back_button"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_margin="10dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_back_white" />
+
+    <TextView
+        android:id="@+id/top_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        tools:text="Сканирование штрихкода" />
+
+    <ImageView
+        android:id="@+id/flash_button"
+        android:visibility="gone"
+        android:layout_margin="10dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentEnd="true"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_flash_off"
+        />
+
+</RelativeLayout>

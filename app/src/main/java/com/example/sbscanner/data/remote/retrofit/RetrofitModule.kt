@@ -33,9 +33,13 @@ class RetrofitModule(option: UrlOption) {
             .build()
     }
 
-    private fun createOkHttpClient() = getUnsafeOkHttpClient()
+    private fun createOkHttpClient() = getOkHttpClient()
         .addInterceptor(createLoggingInterceptor())
         .build()
+
+    private fun getOkHttpClient(): OkHttpClient.Builder{
+        return OkHttpClient.Builder()
+    }
 
     private fun getUnsafeOkHttpClient(): OkHttpClient.Builder {
         return try {
@@ -97,7 +101,7 @@ class RetrofitModule(option: UrlOption) {
     val imageApi: ImageApi = retrofit.create(ImageApi::class.java)
 
     companion object {
-        private const val BASE_URL = "https://procn.archiv.ru:4433/"
+        private const val BASE_URL = "http://procn.archiv.ru:8099/"
 
     }
 }

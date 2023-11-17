@@ -52,14 +52,6 @@ class Presenter(
         router.navigateTo(Screens.DocumentScanner(boxId))
     }
 
-    fun onEditDocumentInfoOpen(boxId: Int, docId: Int) {
-        router.navigateTo(Screens.DocumentInfoEdit(boxId, docId))
-    }
-
-    fun onAddDocumentInfoOpen(boxId: Int, docBarcode: String) {
-        router.navigateTo(Screens.DocumentInfoAdd(boxId, docBarcode))
-    }
-
     fun onAddImagesOpen(boxId: Int) {
         router.navigateTo(Screens.ImageScanner(boxId))
     }
@@ -68,11 +60,11 @@ class Presenter(
         router.navigateTo(Screens.ImageList(docId))
     }
 
-    fun onImageInfoOpen(imgId: Int) {
-        router.navigateTo(Screens.ImageInfo(imgId))
+    fun onOptionOpen() {
+        router.navigateTo(Screens.Option())
     }
 
-    fun onOptionOpen(){
-        router.navigateTo(Screens.Option())
+    fun test() {
+        router.navigateTo(Screens.Test())
     }
 }

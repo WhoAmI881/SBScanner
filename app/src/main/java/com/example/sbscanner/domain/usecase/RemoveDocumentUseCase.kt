@@ -30,7 +30,7 @@ class RemoveDocumentUseCase(
         emit(RemoveDocResult.Start(imgCount))
 
         images.onEach {
-            if (imageRepository.removeImage(it).not()) {
+            if (imageRepository.removeImage(it.id).not()) {
                 emit(RemoveDocResult.ErrorRemoveImage(it.id))
                 return@flow
             }

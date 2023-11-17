@@ -30,7 +30,7 @@ sealed class ResultWrapper<out T> {
 
     data class ErrorResponse(val code: Int) : ResultWrapper<Nothing>()
 
-    object NetworkError : ResultWrapper<Nothing>()
+    data class IOError(val message: String?) : ResultWrapper<Nothing>()
 
     object ParseError : ResultWrapper<Nothing>()
 }

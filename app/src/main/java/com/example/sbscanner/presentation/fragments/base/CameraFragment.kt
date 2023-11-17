@@ -24,11 +24,11 @@ sealed class CameraEvent {
     data class FailedInit(val msg: String?) : CameraEvent()
 }
 
-enum class CameraState {
-    INIT, FAILED, SUCCESS
+enum class CameraStateType {
+    INIT, FAILED, OPEN
 }
 
-enum class FormState {
+enum class FormStateType {
     SCANNING, BARCODE_FOUND, TAKE_PHOTO
 }
 
@@ -106,12 +106,9 @@ abstract class CameraFragment<Event : Any, Effect : Any, Command : Any, State : 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.i("DEBUG", "ViewCreated")
-        with(viewLifecycleOwner.lifecycleScope) {
-            launch {
-                repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                    cameraEvents.collect { handleCameraEvent(it) }
-                }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                cameraEvents.collect { handleCameraEvent(it) }
             }
         }
         getSurfaceTexture().holder.addCallback(object : SurfaceHolder.Callback {
@@ -151,6 +148,7 @@ abstract class CameraFragment<Event : Any, Effect : Any, Command : Any, State : 
                 is InitCameraResult.Success -> {
                     cameraEvents.emit(CameraEvent.SuccessInit(cameraScanner))
                 }
+
                 is InitCameraResult.Error -> {
                     cameraEvents.emit(CameraEvent.FailedInit(result.msg))
                     result.msg?.let { requireView().showSnackbar(it) }
@@ -159,51 +157,3 @@ abstract class CameraFragment<Event : Any, Effect : Any, Command : Any, State : 
         }
     }
 }
-
-/*
-abstract val preview: TextureView
-
-private val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-        adaptabilityCameraPreview(cameraOption.outputSize, preview)
-        initCamera()
-    }
-
-    override fun onSurfaceTextureSizeChanged(
-        surface: SurfaceTexture,
-        width: Int,
-        height: Int
-    ) {
-    }
-
-    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture) = false
-    override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
-}
-
-    private fun adaptabilityCameraPreview(surfaceSize: Size, preview: TextureView) {
-    val scaleFactors = if (preview.height <= preview.width) {
-        val previewRatio = surfaceSize.width / surfaceSize.height.toFloat()
-        val viewFinderRatio = preview.width / preview.height.toFloat()
-        val scaling = viewFinderRatio * previewRatio
-        PointF(1f, scaling)
-    } else {
-        val previewRatio = surfaceSize.height / surfaceSize.width.toFloat()
-        val viewFinderRatio = preview.height / preview.width.toFloat()
-        val scaling = viewFinderRatio * previewRatio
-        PointF(scaling, 1f)
-    }
-
-    val matrix = Matrix()
-    matrix.preScale(
-        scaleFactors.x, scaleFactors.y,
-        preview.width / 2f, preview.height / 2f
-    )
-    preview.setTransform(matrix)
-
-        if (preview.isAvailable) {
-            initCamera()
-        } else {
-            preview.surfaceTextureListener = surfaceTextureListener
-        }
-}
- */
